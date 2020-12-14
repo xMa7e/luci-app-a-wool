@@ -1,0 +1,11 @@
+#!/bin/sh
+
+uci -q batch <<-EOF >/dev/null
+	delete ucitrack.@a-wool[-1]
+	add ucitrack a-wool
+	set ucitrack.@a-wool[-1].init=a-wool
+	commit ucitrack
+EOF
+
+rm -f /tmp/luci-indexcache
+exit 0
