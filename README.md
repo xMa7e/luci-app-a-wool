@@ -15,9 +15,11 @@ https://github.com/lxk0301/jd_scripts
 默认开启追加自定义任务计划
 
 # 安装
+
 需要 docker-compose 需要 docker-compose 需要 docker-compose 重要的事情说三遍
 
 免docker-compose版本：
+
 https://github.com/XiaYi1002/luci-app-x-wool
 
 本人只有ARM设备，所以只在V Plus（aarch64）运行，理论上N1之类的ARM设备都可以运行，前提是要有docker，当然也要有足够的空间，其他版本可自行编译（插件这玩意我也不懂，自行测试）
