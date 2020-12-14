@@ -116,7 +116,7 @@ services:
         #自定义签到延迟
         - JD_BEAN_STOP=$wait
         #如果使用自定义定时任务,取消下面一行的注释
-        - CRONTAB_LIST_FILE=my_crontab_list.sh
+        - CUSTOM_LIST_FILE=my_crontab_list.sh
         #自定义参数
 		EOF
 		let j++
