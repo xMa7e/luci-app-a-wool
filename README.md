@@ -28,7 +28,7 @@ https://github.com/XiaYi1002/luci-app-x-wool
 
 自行体验
 
-![image](https://github.com/XiaYi1002/luci-app-x-wool/blob/master/img/%E7%95%8C%E9%9D%A2.png)
+![image](https://github.com/XiaYi1002/luci-app-a-wool/blob/master/img/main.png)
 
 # 非常感谢
 
