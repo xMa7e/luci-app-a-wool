@@ -105,6 +105,20 @@
 
 </style>
 
+<label class="cbi-value-title">操作</label>
+<div class="cbi-value-field">
+<input class="cbi-button cbi-button-reload" id="update_service" type="button" size="0"
+		value="初始化薅羊毛服务">
+<input class="cbi-button cbi-button-reload" id="stop_container" type="button" size="0"
+		value="停止容器">
+	<input class="cbi-button cbi-button-reset" id="update_pull" type="button" size="0"
+		value="更新镜像">
+		<input class="cbi-button cbi-button-remove" id="stop_container" type="button" size="0"
+		value="停止容器">
+</div>
+
+<%+cbi/valuefooter%>
+<%+cbi/valueheader%>
 
 <label class="cbi-value-title">更新脚本参数</label>
 <div class="cbi-value-field">
@@ -125,33 +139,14 @@
 		<br>请先点击右下角的"保存&应用"按钮，再执行.
 </div>
 
-<%+cbi/valuefooter%>
-<%+cbi/valueheader%>
-
-<label class="cbi-value-title">更新镜像</label>
-<div class="cbi-value-field">
-	<input class="cbi-button cbi-button-reload" id="update_pull" type="button" size="0"
-		value="更新镜像">
-		<br>更新容器镜像
-		<br>请先点击右下角的"保存&应用"按钮，再执行.
-</div>
 
 <%+cbi/valuefooter%>
 <%+cbi/valueheader%>
 
-<label class="cbi-value-title">停止容器</label>
+<label class="cbi-value-title">互助码</label>
 <div class="cbi-value-field">
-	<input class="cbi-button cbi-button-reload" id="stop_container" type="button" size="0"
-		value="停止容器">
-		<br>停止容器运行
-		<br>请先点击右下角的"保存&应用"按钮，再执行.
-</div>
-
-<%+cbi/valuefooter%>
-<%+cbi/valueheader%>
-
-<label class="cbi-value-title">上传互助码</label>
-<div class="cbi-value-field">
+<input class="cbi-button cbi-button-reload" id="get_sc" type="button" size="0"
+		value="提取互助码">
 	<input class="cbi-button cbi-button-reload" id="update_scode" type="button" size="0"
 		value="上传互助码">
 		<br>默认互助码会通过计划任务执行，如需马上上传，请点击此按钮
@@ -159,19 +154,6 @@
 </div>
 <%+cbi/valueheader%>
 <%+cbi/valuefooter%>
-<label class="cbi-value-title">初始化</label>
-<div class="cbi-value-field">
-	<input class="cbi-button cbi-button-reload" id="update_service" type="button" size="0"
-		value="初始化薅羊毛服务">
-		<br>第一次使用或者需要完全重置请点击此脚本
-		<br>全局梯子 全局梯子 全局梯子 以免镜像下载失败
-		<br>请先点击右下角的"保存&应用"按钮，再执行.
-</div>
-
-<%+cbi/valuefooter%>
-<%+cbi/valueheader%>
-
-
 
 <script type="text/javascript">
 
@@ -331,7 +313,29 @@
 			}
 		});
 		return false;
-		});		
+		});	
+//显示并开始刷新
+	function get_sc() {
+		$("body").append(modal);
+		$(".modals-bg").show();
+		setTimeout("get_realtime_log66();", 500);
+	}
+	//提取助力码按钮
+	$("#get_sc").click(function () {
+	var data = {
+				good: "get_sc"
+				}
+		$.ajax({
+			type: "post",
+			url: SAVE_URL,
+			//dataType : "json",
+			data : data,
+			success: function (d) {
+					get_sc();
+			}
+		});
+		return false;
+		});			
 //默认		
 	function get_realtime_log() {
 		$.ajax({
@@ -388,6 +392,35 @@
 			},
 			error: function () {
 				setTimeout("get_realtime_log2();", 500);
+			}
+		});
+	}
+	
+	function get_realtime_log66() {
+		$.ajax({
+			url: '/a-wool.htm?v=' + parseInt(Math.random() * 100000000),
+			dataType: 'html',
+			error: function (xhr) {
+				setTimeout("get_realtime_log66();", 1000);
+			},
+			success: function (response) {
+				var retArea = document.getElementById("log_content3");
+				if (response.search("助力码提取完毕") != -1) {
+					noChange++;
+				}
+				console.log(noChange);
+				if (noChange > 20) {
+					window.location.href = '<%=luci.dispatcher.build_url("admin", "services", "a-wool")%>';
+					return false;
+				} else {
+					setTimeout("get_realtime_log66();", 250);
+				}
+				retArea.value = response;
+				retArea.scrollTop = retArea.scrollHeight;
+				_responseLen = response.length;
+			},
+			error: function () {
+				setTimeout("get_realtime_log66();", 500);
 			}
 		});
 	}
