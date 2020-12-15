@@ -45,7 +45,4 @@ lxk0301
 
 https://github.com/lxk0301/jd_scripts
 
-EvineDeng
-
-https://github.com/EvineDeng/jd-base/wiki/Docker
 
