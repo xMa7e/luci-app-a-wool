@@ -29,6 +29,8 @@ function run()
         luci.sys.call("/usr/share/a-wool/newapp.sh -x &")
 	elseif up_code == "sp_container" then
         luci.sys.call("/usr/share/a-wool/newapp.sh -y &")
+	elseif up_code == "del_container" then
+        luci.sys.call("/usr/share/a-wool/newapp.sh -w &")
 	elseif up_code == "up_service" then
         luci.sys.call("/usr/share/a-wool/newapp.sh -a &")
 	elseif up_code == "get_sc" then

@@ -104,28 +104,26 @@
 	}
 
 </style>
-
+<%+cbi/valuefooter%>
+<%+cbi/valueheader%>
 <label class="cbi-value-title">操作</label>
 <div class="cbi-value-field">
 <input class="cbi-button cbi-button-reload" id="update_service" type="button" size="0"
-		value="初始化薅羊毛服务">
-<input class="cbi-button cbi-button-reload" id="stop_container" type="button" size="0"
-		value="停止容器">
+		value="初始化容器">
+		<input class="cbi-button cbi-button-reload" id="update_yml" type="button" size="0"
+		value="启动/更新容器">
 	<input class="cbi-button cbi-button-reset" id="update_pull" type="button" size="0"
 		value="更新镜像">
 		<input class="cbi-button cbi-button-remove" id="stop_container" type="button" size="0"
 		value="停止容器">
-</div>
-
-<%+cbi/valuefooter%>
-<%+cbi/valueheader%>
-
-<label class="cbi-value-title">更新脚本参数</label>
-<div class="cbi-value-field">
-	<input class="cbi-button cbi-button-reload" id="update_yml" type="button" size="0"
-		value="更新脚本参数">
-		<br>此项会覆盖原来的docker-compose.yml
-		<br>请先点击右下角的"保存&应用"按钮，再执行.
+		<input class="cbi-button cbi-button-remove" id="del_container" type="button" size="0"
+		value="删除容器">
+		<br>1.初始化容器会删除所有容器和日志等文件，然后再重新生成，请谨慎操作
+		<br>2.修改保存完此页面参数后，点"启动/更新容器"按钮会自动更新容器里的参数
+		<br>3.点击"更新镜像"按钮会自动把容器镜像更新到最新
+		<br>4.点击"停止容器"按钮，会把所有容器暂停，如需单独暂停，请前往固件的docker界面操作
+		<br>5.点击"删除容器"按钮，会删除相关容器和本地日志目录
+		<br><font color="red">不友好提示:第一次启动和更新会下载镜像,建议挂梯子....</font>
 </div>
 
 <%+cbi/valuefooter%>
@@ -268,6 +266,29 @@
 		});
 		return false;
 		});		
+	
+	function del_container() {
+		$("body").append(modal);
+		$(".modals-bg").show();
+		setTimeout("get_realtime_log();", 500);
+	}
+	//停止容器按钮
+	$("#del_container").click(function () {
+	var data = {
+				good: "del_container"
+				}
+		$.ajax({
+			type: "post",
+			url: SAVE_URL,
+			//dataType : "json",
+			data : data,
+			success: function (d) {
+					del_container();
+			}
+		});
+		return false;
+		});		
+
 
 	//显示并开始刷新
 	function update_scode() {

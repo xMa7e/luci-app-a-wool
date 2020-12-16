@@ -80,6 +80,8 @@ b_run() {
     igot=$(uci_get_by_type global igot)
 	ua=$(uci_get_by_type global useragent)
 	wait=$(uci_get_by_type global beansignstop)
+	men=$(uci_get_by_type global cont_men 256M)
+	jd_cname=$(uci_get_by_type global jd_cname jd_scripts)
     echo "配置脚本参数..." >>$LOG_HTM 2>&1	
 	if [ ! -d $jd_dir2 ]; then
 	#场地没被收购 赶紧拿下
@@ -93,9 +95,13 @@ services:
 	j=1
 	for ck in $(uci_get_by_type global cookiebkye); do
 		cat <<-EOF >> $jd_dir2/docker-compose.yml
-    jd_scripts$j:
+    $jd_cname$j:
       image: akyakya/jd_scripts
-      container_name: jd_scripts$j
+      deploy:
+        resources:
+          limits:
+            memory: $men
+      container_name: $jd_cname$j
       restart: always
       network_mode: "host"
       volumes:
@@ -214,7 +220,7 @@ ncshare_code(){
 			ncsc="农场日志文件不存在，请检查是否已经执行过对应脚本"
 			echo "cookie$j农场互助码:"$ncsc >> $LOG_HTM 2>&1
 		else
-			ncsc=`sed -n '/【您的互助码shareCode】.*/'p $jd_dir2/logs$j/jd_fruit.log | awk '{print $5}' | sed -n '1p'`
+			ncsc=`sed -n '/ 【您的东东农场互助码shareCode】 .*/'p $jd_dir2/logs$j/jd_fruit.log | awk '{print $5}' | sed -n '1p'`
 			if test -n "$ncsc" ; then
 				for sc in $(uci_get_by_type global nc_sharecode); do
 					if test "$ncsc" == "$sc" ; then
@@ -270,7 +276,7 @@ zdshare_code(){
 			zdsc="种豆得豆日志文件不存在，请检查是否已经执行过对应脚本"
 			echo "cookie$j种豆得豆互助码:"$zdsc >> $LOG_HTM 2>&1
 		else
-			zdsc=`sed -n '/【您的互助码plantUuid】 .*/'p $jd_dir2/logs$j/jd_plantBean.log | awk '{print $5}' | sed -n '1p'`
+			zdsc=`sed -n '/ 【您的京东种豆得豆互助码】 .*/'p $jd_dir2/logs$j/jd_plantBean.log | awk '{print $5}' | sed -n '1p'`
 			if test -n "$zdsc" ; then
 				for sc in $(uci_get_by_type global zddd_sharecode); do
 					if test "$zdsc" == "$sc" ; then
@@ -298,7 +304,7 @@ petshare_code(){
 			petsc="东东萌宠日志文件不存在，请检查是否已经执行过对应脚本"
 			echo "cookie$j东东萌宠互助码:"$petsc >> $LOG_HTM 2>&1
 		else
-			petsc=`sed -n '/【您的互助码shareCode】 .*/'p $jd_dir2/logs$j/jd_pet.log | awk '{print $5}' | sed -n '1p'`
+			petsc=`sed -n '/ 【您的东东萌宠互助码shareCode】 .*/'p $jd_dir2/logs$j/jd_pet.log | awk '{print $5}' | sed -n '1p'`
 			if test -n "$petsc" ; then
 				for sc in $(uci_get_by_type global pet_sharecode); do
 					if test "$petsc" == "$sc" ; then
@@ -326,7 +332,7 @@ w_run() {
     echo "启动容器..." >>$LOG_HTM 2>&1
     jd_dir2=$(uci_get_by_type global jd_dir)
     cd $jd_dir2
-    docker-compose up -d >>$LOG_HTM 2>&1
+    docker-compose --compatibility up -d >>$LOG_HTM 2>&1
     echo "任务已完成" >>$LOG_HTM 2>&1
 }
 
@@ -335,7 +341,7 @@ x_run() {
     echo "更新镜像..." >>$LOG_HTM 2>&1
     jd_dir2=$(uci_get_by_type global jd_dir)
     cd $jd_dir2
-    docker-compose pull >>$LOG_HTM 2>&1
+    docker-compose --compatibility pull >>$LOG_HTM 2>&1
     echo "任务已完成" >>$LOG_HTM 2>&1
 }
 # 疫情爆发，躲起来
@@ -343,7 +349,7 @@ y_run() {
     echo "停止容器..." >>$LOG_HTM 2>&1
     jd_dir2=$(uci_get_by_type global jd_dir)
     cd $jd_dir2
-    docker-compose stop >>$LOG_HTM 2>&1
+    docker-compose --compatibility stop >>$LOG_HTM 2>&1
     echo "任务已完成" >>$LOG_HTM 2>&1
 }
 
@@ -352,7 +358,7 @@ z_run() {
     echo "重启容器..." >>$LOG_HTM 2>&1
     jd_dir2=$(uci_get_by_type global jd_dir)
     cd $jd_dir2
-    docker-compose restart >>$LOG_HTM 2>&1
+    docker-compose --compatibility restart >>$LOG_HTM 2>&1
     echo "任务已完成" >>$LOG_HTM 2>&1
 }
 
@@ -416,8 +422,9 @@ while getopts ":abcdstxyzh" arg; do
         ;;
     #停止&删除
     w)
-	    system_time
+		system_time
         a_run
+		echo "任务已完成" >>$LOG_HTM 2>&1
         exit 0
         ;;
 	#更新

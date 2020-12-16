@@ -7,8 +7,8 @@
 include $(TOPDIR)/rules.mk
 PKG_NAME:=luci-app-a-wool
 LUCI_PKGARCH:=all
-PKG_VERSION:=bate3
-PKG_RELEASE:=20201215
+PKG_VERSION:=bate5
+PKG_RELEASE:=20201216
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -16,7 +16,7 @@ define Package/luci-app-a-wool
  	SECTION:=luci
 	CATEGORY:=LuCI
 	SUBMENU:=3. Applications
-	TITLE:=Luci for JD dailybonus Script 
+	TITLE:=Luci for JD Script 
 	PKGARCH:=all
 endef
 

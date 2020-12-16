@@ -18,6 +18,16 @@ o.default = ""
 o.rmempty = false
 o.description = translate("<br/>目录结尾不要带'/'")
 
+o =s:option(Value, "jd_cname", translate("容器名称"))
+o.default = "jd_scripts"
+o.rmempty = false
+o.description = translate("<br/>定义生成的容器前缀，会根据cookie数量在后面增加数字区分")
+
+o =s:option(Value, "cont_men", translate("容器内存"))
+o.default = "256M"
+o.rmempty = false
+o.description = translate("<br/>限制容器内存,默认256M")
+
 o= s:option(DynamicList, "cookiebkye", translate("cookies"))
 o.rmempty = false
 o.description = translate("<br/>Cookie的具体形式：pt_key=xxxxxxxxxx;pt_pin=xxxx; <br/>由上到下第一个为cookie1<br/>注：cookies不要带有空格")
