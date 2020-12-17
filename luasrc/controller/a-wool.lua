@@ -8,9 +8,11 @@ function index()
     
     entry({"admin", "services", "a-wool"}, alias("admin", "services", "a-wool", "client"), _("JD_Compose"), 10).dependent = true -- 首页
     entry({"admin", "services", "a-wool", "client"}, cbi("a-wool/client"),_("Client"), 10).leaf = true -- 基本设置
-    entry({"admin", "services", "a-wool", "log"},form("a-wool/log"),_("Log"), 50).leaf = true -- 日志页面
+    entry({"admin", "services", "a-wool", "log"},form("a-wool/log"),_("Log"), 60).leaf = true -- 日志页面
     entry({"admin", "services", "a-wool", "script"},form("a-wool/script"),_("参数配置"), 20).leaf = true -- 直接配置脚本
-	entry({"admin", "services", "a-wool", "script2"},form("a-wool/script2"),_("自定义任务列表"), 30).leaf = true -- 直接配置脚本
+	entry({"admin", "services", "a-wool", "script2"},form("a-wool/script2"),_("自定任务"), 30).leaf = true -- 直接配置脚本
+	entry({"admin", "services", "a-wool", "script3"},form("a-wool/script3"),_("云端任务"), 40).leaf = true -- 直接配置脚本
+	entry({"admin", "services", "a-wool", "script4"},form("a-wool/script4"),_("容器任务"), 50).leaf = true -- 直接配置脚本
     entry({"admin", "services", "a-wool", "run"}, call("run")) -- 执行程序
     entry({"admin", "services", "a-wool", "update"}, call("update")) -- 执行更新
     entry({"admin", "services", "a-wool", "check_update"}, call("check_update")) -- 检查更新
@@ -35,6 +37,8 @@ function run()
         luci.sys.call("/usr/share/a-wool/newapp.sh -a &")
 	elseif up_code == "get_sc" then
         luci.sys.call("/usr/share/a-wool/newapp.sh -t &")
+	elseif up_code == "update_lt" then
+        luci.sys.call("/usr/share/a-wool/newapp.sh -d &")
 	elseif up_code == "up_scode" then
         luci.sys.call("/usr/share/a-wool/create_share_codes.sh &")
 	end

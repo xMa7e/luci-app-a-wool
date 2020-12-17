@@ -4,5 +4,4 @@ config global
 	option serverchan_enable '0'
 	option sc_update '0'
 	option beansignstop '0'
-	option notify_enable '0'
 	option sc_updatetime '3 2 1,10,20 x x'

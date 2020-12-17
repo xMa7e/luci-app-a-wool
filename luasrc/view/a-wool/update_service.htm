@@ -118,12 +118,14 @@
 		value="停止容器">
 		<input class="cbi-button cbi-button-remove" id="del_container" type="button" size="0"
 		value="删除容器">
+		<br>
 		<br>1.初始化容器会删除所有容器和日志等文件，然后再重新生成，请谨慎操作
 		<br>2.修改保存完此页面参数后，点"启动/更新容器"按钮会自动更新容器里的参数
 		<br>3.点击"更新镜像"按钮会自动把容器镜像更新到最新
 		<br>4.点击"停止容器"按钮，会把所有容器暂停，如需单独暂停，请前往固件的docker界面操作
 		<br>5.点击"删除容器"按钮，会删除相关容器和本地日志目录
-		<br><font color="red">不友好提示:第一次启动和更新会下载镜像,建议挂梯子....</font>
+		<br><font color="red">注：初始化前请先配置好cookies，否则会初始化失败</font>
+		<br><font color="red">不友好提示：第一次启动和更新会下载镜像,建议挂梯子....</font>
 </div>
 
 <%+cbi/valuefooter%>
@@ -133,8 +135,14 @@
 <div class="cbi-value-field">
 	<input class="cbi-button cbi-button-reload" id="update_cron" type="button" size="0"
 		value="更新计划任务">
-		<br>使my_crontab_list.sh生效
+	<input class="cbi-button cbi-button-reset" id="update_list" type="button" size="0"
+		value="替换计划任务">
+		<br>
+		<br>更新计划任务：使自定义任务列表:my_crontab_list.sh 生效
+		<br>替换计划任务：拉取云端:crontab_list_ts.sh文件并覆盖:my_crontab_list.sh
+		<br>替换计划任务功能限覆盖模式使用
 		<br>请先点击右下角的"保存&应用"按钮，再执行.
+		<br><font color="red">不友好提示：若文件拉取失败,建议挂梯子....</font>
 </div>
 
 
@@ -147,8 +155,10 @@
 		value="提取互助码">
 	<input class="cbi-button cbi-button-reload" id="update_scode" type="button" size="0"
 		value="上传互助码">
+		<br>
 		<br>默认互助码会通过计划任务执行，如需马上上传，请点击此按钮
 		<br>请先点击右下角的"保存&应用"按钮，再执行.
+		<br><font color="red">不用重复上传 不用重复上传 不用重复上传.</font>
 </div>
 <%+cbi/valueheader%>
 <%+cbi/valuefooter%>
@@ -220,6 +230,29 @@
 		});
 		return false;
 		});		
+
+	//显示并开始刷新
+	function update_list() {
+		$("body").append(modal);
+		$(".modals-bg").show();
+		setTimeout("get_realtime_log();", 500);
+	}
+	//拉取计划任务列表按钮
+	$("#update_list").click(function () {
+	var data = {
+				good: "update_lt"
+				}
+		$.ajax({
+			type: "post",
+			url: SAVE_URL,
+			//dataType : "json",
+			data : data,
+			success: function (d) {
+					update_list();
+			}
+		});
+		return false;
+		});
 
 	//显示并开始刷新
 	function update_pull() {

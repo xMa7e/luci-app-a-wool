@@ -14,7 +14,7 @@ usage() {
 		    -a                      初始化
 		    -b                      更新参数			
 		    -c                      更新任务 
-		    -d                      查看助力码
+		    -d                      替换任务
 			-t                      提取互助码
 		    -w                      停止&删除
 		    -x                      更新
@@ -47,6 +47,15 @@ cancel() {
         echo "$1"
     fi
     exit 1
+}
+# 寻找目标
+run() {
+    cookies=$(uci_get_by_type global cookiebkye)
+	if [ ! -n "$cookies" ]; then
+	echo "任务已完成 未设置cookies 请先配置好cookies 请先配置好cookies 请先配置好cookies 再进行初始化" >>$LOG_HTM && exit 1
+    else
+    echo "cookies已配置正在初始化..." >>$LOG_HTM 2>&1
+    fi
 }
 
 # 收购铜锣湾
@@ -82,6 +91,7 @@ b_run() {
 	wait=$(uci_get_by_type global beansignstop)
 	men=$(uci_get_by_type global cont_men 256M)
 	jd_cname=$(uci_get_by_type global jd_cname jd_scripts)
+	cron_model=$(uci_get_by_type global cron_model)
     echo "配置脚本参数..." >>$LOG_HTM 2>&1	
 	if [ ! -d $jd_dir2 ]; then
 	#场地没被收购 赶紧拿下
@@ -107,6 +117,7 @@ services:
       volumes:
         - ./my_crontab_list.sh:/scripts/docker/my_crontab_list.sh
         - ./logs$j:/scripts/logs
+        - ./docker_crontabs:/etc/crontabs
         -  /etc/localtime:/etc/localtime
       tty: true
       environment:
@@ -127,17 +138,28 @@ services:
         - JD_USER_AGENT=$ua
         #自定义签到延迟
         - JD_BEAN_STOP=$wait
+        #自定义参数
         #如果使用自定义定时任务,取消下面一行的注释
         - CUSTOM_LIST_FILE=my_crontab_list.sh
-        #自定义参数
+        # - CUSTOM_LIST_MERGE_TYPE=overwrite
 		EOF
 		let j++
 	done
 	j=`expr $j - 1`
 	chmod -R 777 $jd_dir2
-	if [ $notify_enable -eq 1 ]; then
-    echo "设置通知形式为简要通知..." >>$LOG_HTM 2>&1
+	echo "判断通知形式..." >>$LOG_HTM 2>&1
+	if [ $notify_enable -eq 0 ]; then
+    echo "当前形式： 简要通知" >>$LOG_HTM 2>&1
 	sed -i  's/- JD_BEAN_SIGN_NOTIFY_SIMPLE=/&true/' $jd_dir2/docker-compose.yml
+	else
+	echo "当前形式： 原始通知" >>$LOG_HTM 2>&1
+	fi
+	if [ $cron_model -eq 1 ]; then
+    echo "判断计划任务运行模式..." >>$LOG_HTM 2>&1
+	echo "覆盖模式" >>$LOG_HTM 2>&1
+	sed -i 's/# - CUSTOM_LIST_MERGE_TYPE=overwrite/- CUSTOM_LIST_MERGE_TYPE=overwrite/g' $jd_dir2/docker-compose.yml
+	else
+	echo "追加模式" >>$LOG_HTM 2>&1
 	fi
 }
 
@@ -160,14 +182,42 @@ c_run() {
 
 # 商户营业时间
 d_run() {
-    echo "追加自定义计划..." >>$LOG_HTM 2>&1
+    echo "配置计划任务计划..." >>$LOG_HTM 2>&1
     jd_dir2=$(uci_get_by_type global jd_dir)
+	cron_model=$(uci_get_by_type global cron_model)
+    echo "开始拉取云端任务列表：crontab_list_ts.sh..." >>$LOG_HTM 2>&1
+	cd $jd_dir2
+	curl -o crontab_list_ts.sh https://cdn.jsdelivr.net/gh/lxk0301/jd_scripts@master/docker/crontab_list_ts.sh >> $LOG_HTM 2>&1
+    echo "拉取完毕，开始判断任务运行模式..." >>$LOG_HTM 2>&1
+	if [ $cron_model -eq 0 ]; then
+	echo "当前模式：追加模式" >>$LOG_HTM 2>&1
+	echo "追加自定义任务列表到默认任务列表中..." >>$LOG_HTM 2>&1
     grep "list crondiy" /etc/config/a-wool >$jd_dir2/my_crontab_list.sh
-	chmod -R 777 $jd_dir2
     sed -i "s/\'//g" $jd_dir2/my_crontab_list.sh
     sed -i "s/list crondiy//g" $jd_dir2/my_crontab_list.sh
     sed -i 's/^[ \t]*//g' $jd_dir2/my_crontab_list.sh
+	sed -i '1i\# 以下是追加的计划任务' $jd_dir2/my_crontab_list.sh
+	echo "追加完毕 更新容器任务列表..." >>$LOG_HTM 2>&1
+	elif [ $cron_model -eq 1 ]; then
+	echo "当前模式：覆盖模式" >>$LOG_HTM 2>&1
+	echo "请自行添加计划任务列表：my_crontab_list.sh 至项目根目录" >>$LOG_HTM 2>&1
+	fi
+	if [[ $cron_model -eq 1 && $crondiy_enable -eq 1 ]]; then
+	echo "追加自定义任务列表到默认任务列表中：my_crontab_list.sh..." >>$LOG_HTM 2>&1
+	sed -i '/# 以下是追加的计划任务/,/# 以上是追加的计划任务/d' $jd_dir2/my_crontab_list.sh
+    grep "list crondiy" /etc/config/a-wool >$jd_dir2/my_crontab_list.log
+    sed -i "s/\'//g" $jd_dir2/my_crontab_list.log
+    sed -i "s/list crondiy//g" $jd_dir2/my_crontab_list.log
+    sed -i 's/^[ \t]*//g' $jd_dir2/my_crontab_list.log
+	sed -i '1i\# 以下是追加的计划任务' $jd_dir2/my_crontab_list.log
+	sed -i '$a\# 以上是追加的计划任务'  $jd_dir2/my_crontab_list.log
+	cat $jd_dir2/my_crontab_list.log >> $jd_dir2/my_crontab_list.sh
+	echo "追加完毕 更新容器任务列表..." >>$LOG_HTM 2>&1	
+	rm -rf $jd_dir2/my_crontab_list.log
+	fi
+	chmod -R 777 $jd_dir2
 }
+
 
 # 外交部任务安排
 e_run() {
@@ -183,6 +233,27 @@ e_run() {
 	sed -i '/a-wool\/create_share_codes/d' /etc/crontabs/root
 	fi
 }
+
+# 替换计划任务
+h_run() {
+    jd_dir2=$(uci_get_by_type global jd_dir)
+	cron_model=$(uci_get_by_type global cron_model)
+    echo "开始拉取云端任务列表：crontab_list_ts.sh..." >>$LOG_HTM 2>&1
+	cd $jd_dir2
+	curl -o crontab_list_ts.sh https://cdn.jsdelivr.net/gh/lxk0301/jd_scripts@master/docker/crontab_list_ts.sh >> $LOG_HTM 2>&1
+	echo "拉取完毕" >>$LOG_HTM 2>&1
+	echo "判断运行模式..." >>$LOG_HTM 2>&1
+	if [ $cron_model -eq 1 ]; then
+	echo "当前模式：覆盖模式" >>$LOG_HTM 2>&1
+	echo "开始替换任务..." >>$LOG_HTM 2>&1
+	cp -R crontab_list_ts.sh my_crontab_list.sh
+	echo "任务已替换完成 如需让 my_crontab_list.sh 生效，请点击【更新计划任务】" >>$LOG_HTM 2>&1
+	else
+	echo "替换失败，当前模式：追加模式" >>$LOG_HTM 2>&1
+	fi
+	chmod -R 777 $jd_dir2
+}
+
 #京喜工厂互助码提取
 jxshare_code(){
 	jd_dir2=$(uci_get_by_type global jd_dir)
@@ -322,11 +393,6 @@ petshare_code(){
 
 }
 
-# 查看商户运营报表
-# h_run() {
-
-# }
-
 # 开始运营
 w_run() {
     echo "启动容器..." >>$LOG_HTM 2>&1
@@ -373,11 +439,13 @@ while getopts ":abcdstxyzh" arg; do
 	#初始化
     a)
 	    system_time
+		run
 	    a_run
         b_run
 		c_run
 		d_run
 		e_run
+		h_run
 		w_run
         exit 0
         ;;
@@ -398,10 +466,11 @@ while getopts ":abcdstxyzh" arg; do
 		z_run
         exit 0
         ;;
-	#查看助力码
+	#替换计划任务
     d)
 	    system_time
         h_run
+		z_run
         exit 0
         ;;
 	#助力码上传
